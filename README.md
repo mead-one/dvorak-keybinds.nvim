@@ -1,4 +1,6 @@
 # dvorak-keybinds.nvim
+**This plugin is in an early stage of development - I do not recommend installing it unless you are intending to
+add to it and/or contribute.**
 
 This Neovim plugin provides a simple set of keybinds optimised for the Dvorak keyboard layout.
 
