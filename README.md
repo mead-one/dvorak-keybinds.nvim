@@ -13,6 +13,7 @@ currently commented out until checking for loaded plugins is supported. Pull req
 config = function()
   require('dvorak-plugins').setup()
 end
+}
 ```
 
 The Dvorak keybinds can be toggled with `:DvorakToggle`.
