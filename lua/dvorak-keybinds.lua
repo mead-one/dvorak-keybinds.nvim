@@ -199,6 +199,8 @@ function M.enable()
     -- Unmap <leader>l
     pcall(vim.keymap.del, "n", "<leader>l")
 
+    -- Set <leader>h, which is the same, regardless of keymap
+    vim.keymap.set("n", "<leader>h", "<cmd>bp<CR>", {noremap = true, silent = true})
     -- Map <leader>s
     vim.keymap.set("n", "<leader>s", "<cmd>bp<CR>", {noremap = true, silent = true})
   end
@@ -265,6 +267,8 @@ function M.disable()
     -- Unmap <leader>s
     pcall(vim.keymap.del, "n", "<leader>s")
 
+    -- Set <leader>h, which is the same, regardless of keymap
+    vim.keymap.set("n", "<leader>h", "<cmd>bp<CR>", {noremap = true, silent = true})
     -- Map <leader>l
     vim.keymap.set("n", "<leader>l", "<cmd>bn<CR>", {noremap = true, silent = true})
   end
@@ -297,14 +301,12 @@ function M.setup(opts)
     M.disable()
   end, { desc = "Disable Dvorak keybinds" })
 
-  if opts.auto_enable then
-    M.enable()
-  end
-
   if opts.leader_buffer_navigation then
     vim.g.leader_buffer_navigation = true
-    -- Set <leader>h, which is the same, regardless of keymap
-    vim.keymap.set("n", "<leader>h", "<cmd>bp<CR>", {noremap = true, silent = true})
+  end
+
+  if opts.auto_enable then
+    M.enable()
   end
 end
 
