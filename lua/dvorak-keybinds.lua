@@ -56,28 +56,52 @@ local insert_mode_keybinds = {
   {shortcut = "<C-s>", command = "<Right>"}
 }
 
--- QWERTY keybinds for tmux navigation
-local tmux_keybinds_qwerty = {
+-- QWERTY keybinds for vim-tmux-navigator
+local vim_tmux_keybinds_qwerty = {
   -- (Ctrl+h) Focus window left
-  {shortcut = "<C-h>", command = "<cmd> TmuxNavigateLeft<CR>"},
+  {shortcut = "<C-h>", command = "<cmd>TmuxNavigateLeft<CR>"},
   -- (Ctrl+j) Focus window below
-  {shortcut = "<C-j>", command = "<cmd> TmuxNavigateDown<CR>"},
+  {shortcut = "<C-j>", command = "<cmd>TmuxNavigateDown<CR>"},
   -- (Ctrl+k) Focus window above
-  {shortcut = "<C-k>", command = "<cmd> TmuxNavigateUp<CR>"},
+  {shortcut = "<C-k>", command = "<cmd>TmuxNavigateUp<CR>"},
   -- (Ctrl+l) Focus window right
-  {shortcut = "<C-l>", command = "<cmd> TmuxNavigateRight<CR>"},
+  {shortcut = "<C-l>", command = "<cmd>TmuxNavigateRight<CR>"},
 }
 
--- Dvorak keybinds for tmux navigation
-local tmux_keybinds_dvorak = {
+-- Dvorak keybinds for vim-tmux-navigator
+local vim_tmux_keybinds_dvorak = {
   -- (Ctrl+h) Focus window left
-  {shortcut = "<C-h>", command = "<cmd> TmuxNavigateLeft<CR>"},
+  {shortcut = "<C-h>", command = "<cmd>TmuxNavigateLeft<CR>"},
   -- (Ctrl+t) Focus window below
-  {shortcut = "<C-t>", command = "<cmd> TmuxNavigateDown<CR>"},
+  {shortcut = "<C-t>", command = "<cmd>TmuxNavigateDown<CR>"},
   -- (Ctrl+n) Focus window above
-  {shortcut = "<C-n>", command = "<cmd> TmuxNavigateUp<CR>"},
+  {shortcut = "<C-n>", command = "<cmd>TmuxNavigateUp<CR>"},
   -- (Ctrl+s) Focus window right
-  {shortcut = "<C-s>", command = "<cmd> TmuxNavigateRight<CR>"},
+  {shortcut = "<C-s>", command = "<cmd>TmuxNavigateRight<CR>"},
+}
+
+-- QWERTY keybinds for nvim-tmux-navigation
+local nvim_tmux_keybinds_qwerty = {
+  -- (Ctrl+h) Focus window left
+  {shortcut = "<C-h>", command = "<cmd>NvimTmuxNavigateLeft<CR>"},
+  -- (Ctrl+j) Focus window below
+  {shortcut = "<C-j>", command = "<cmd>NvimTmuxNavigateDown<CR>"},
+  -- (Ctrl+k) Focus window above
+  {shortcut = "<C-k>", command = "<cmd>NvimTmuxNavigateUp<CR>"},
+  -- (Ctrl+l) Focus window right
+  {shortcut = "<C-l>", command = "<cmd>NvimTmuxNavigateRight<CR>"},
+}
+
+-- Dvorak keybinds for nvim-tmux-navigation
+local nvim_tmux_keybinds_dvorak = {
+  -- (Ctrl+h) Focus window left
+  {shortcut = "<C-h>", command = "<cmd>NvimTmuxNavigateLeft<CR>"},
+  -- (Ctrl+t) Focus window below
+  {shortcut = "<C-t>", command = "<cmd>NvimTmuxNavigateDown<CR>"},
+  -- (Ctrl+n) Focus window above
+  {shortcut = "<C-n>", command = "<cmd>NvimTmuxNavigateUp<CR>"},
+  -- (Ctrl+s) Focus window right
+  {shortcut = "<C-s>", command = "<cmd>NvimTmuxNavigateRight<CR>"},
 }
 
 -- Qwerty keybinds for smart-splits
@@ -146,13 +170,25 @@ function M.enable()
     vim.keymap.set("i", mapping.shortcut, mapping.command, {noremap = true, silent = true})
   end
 
-  if tmux_navigator_available() or tmux_navigation_available() then
+  if tmux_navigator_available() then
     -- Unmap QWERTY bindings for tmux navigation
-    for _, mapping in ipairs(tmux_keybinds_qwerty) do
+    for _, mapping in ipairs(vim_tmux_keybinds_qwerty) do
       pcall(vim.keymap.del, "n", mapping.shortcut)
     end
     -- Re-map Dvorak bindings for tmux navigation
-    for _, mapping in ipairs(tmux_keybinds_dvorak) do
+    for _, mapping in ipairs(vim_tmux_keybinds_dvorak) do
+      vim.keymap.set("n", mapping.shortcut, mapping.command, {noremap = true, silent = true})
+    end
+  end
+
+  if tmux_navigation_available() then
+    -- Unmap QWERTY bindings for nvim-tmux-navigation
+    for _, mapping in ipairs(nvim_tmux_keybinds_qwerty) do
+      pcall(vim.keymap.del, "n", mapping.shortcut)
+    end
+
+    -- Re-map Dvorak bindings for nvim-tmux-navigation
+    for _, mapping in ipairs(nvim_tmux_keybinds_dvorak) do
       vim.keymap.set("n", mapping.shortcut, mapping.command, {noremap = true, silent = true})
     end
   end
@@ -193,12 +229,24 @@ function M.disable()
   end
 
   -- Unmap Dvorak keybinds for tmux navigation
-  if tmux_navigator_available() or tmux_navigation_available() then
-    for _, mapping in ipairs(tmux_keybinds_dvorak) do
+  if tmux_navigator_available() then
+    for _, mapping in ipairs(vim_tmux_keybinds_dvorak) do
       pcall(vim.keymap.del, "n", mapping.shortcut)
     end
     -- Re-set QWERTY keybinds for tmux navigation
-    for _, mapping in ipairs(tmux_keybinds_qwerty) do
+    for _, mapping in ipairs(vim_tmux_keybinds_qwerty) do
+      vim.keymap.set("n", mapping.shortcut, mapping.command, {noremap = true, silent = true})
+    end
+  end
+
+  if tmux_navigation_available() then
+    -- Unmap Dvorak keybinds for nvim-tmux-navigation
+    for _, mapping in ipairs(nvim_tmux_keybinds_dvorak) do
+      pcall(vim.keymap.del, "n", mapping.shortcut)
+    end
+
+    -- Re-set QWERTY keybinds for nvim-tmux-navigation
+    for _, mapping in ipairs(nvim_tmux_keybinds_qwerty) do
       vim.keymap.set("n", mapping.shortcut, mapping.command, {noremap = true, silent = true})
     end
   end
