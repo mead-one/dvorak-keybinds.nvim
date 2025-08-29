@@ -5,9 +5,9 @@ local M = {}
 
 local global_keybinds = {
   -- (t) Navigate down (display lines - same line if wrapped text)
-  {shortcut = "t", command = "gj"},
+  {shortcut = "t", command = "j"},
   -- (n) Navigate up (display lines - same line if wrapped text)
-  {shortcut = "n", command = "gk"},
+  {shortcut = "n", command = "k"},
   -- (s) Navigate right (h) Navigate left
   {shortcut = "s", command = "l"},
   -- (h) remains the same
@@ -25,13 +25,6 @@ local normal_mode_keybinds = {
   {shortcut = "J", command = "N"},
   -- (S) Bottom of screen (H) Top of screen
   {shortcut = "S", command = "L"},
-  -- (Ctrl+w v) Vertical split
-  {shortcut = "<C-w>v", command = "<cmd>vs<CR>"},
-  -- (Ctrl+w z) Horizontal split
-  {shortcut = "<C-w>z", command = "<cmd>sp<CR>"},
-  -- Split horizontally and vertically: (leader-z), (leader-v)
-  {shortcut = "<leader>z", command = "<cmd>split<CR>"},
-  {shortcut = "<leader>v", command = "<cmd>vsplit<CR>"},
   -- (Ctrl+w d) Navigate to window left
   {shortcut = "<C-w>h", command = "<cmd>wincmd h<CR>"},
   -- (Ctrl+w h) Navigate to window down
@@ -40,8 +33,6 @@ local normal_mode_keybinds = {
   {shortcut = "<C-w>n", command = "<cmd>wincmd k<CR>"},
   -- (Ctrl+w n) Navigate to window right
   {shortcut = "<C-w>s", command = "<cmd>wincmd l<CR>"},
-  -- (H) Navigate next buffer
-  {shortcut = "<leader>s", command = "<cmd>bn<CR>"},
 }
 
 -- Keybinds for insert mode
@@ -204,6 +195,14 @@ function M.enable()
     end
   end
 
+  if vim.g.leader_buffer_navigation then
+    -- Unmap <leader>l
+    pcall(vim.keymap.del, "n", "<leader>l")
+
+    -- Map <leader>s
+    vim.keymap.set("n", "<leader>s", "<cmd>bp<CR>", {noremap = true, silent = true})
+  end
+
   vim.g.dvorak_enabled = true
   print("Dvorak keybinds enabled")
 end
@@ -262,6 +261,14 @@ function M.disable()
     end
   end
 
+  if vim.g.leader_buffer_navigation then
+    -- Unmap <leader>s
+    pcall(vim.keymap.del, "n", "<leader>s")
+
+    -- Map <leader>l
+    vim.keymap.set("n", "<leader>l", "<cmd>bn<CR>", {noremap = true, silent = true})
+  end
+
   vim.g.dvorak_enabled = false
   print("Dvorak keybinds disabled")
 end
@@ -292,6 +299,12 @@ function M.setup(opts)
 
   if opts.auto_enable then
     M.enable()
+  end
+
+  if opts.leader_buffer_navigation then
+    vim.g.leader_buffer_navigation = true
+    -- Set <leader>h, which is the same, regardless of keymap
+    vim.keymap.set("n", "<leader>h", "<cmd>bp<CR>", {noremap = true, silent = true})
   end
 end
 
