@@ -24,7 +24,6 @@ to resolve conflicts with other actions:
 | Previous search result | `J` | `N` |
 | Bottom of screen | `S` | `L` |
 | Top of screen | `H` | `H` |
-| Window actions |  |  |
 | Navigate to window left | `<C-w>h` | `<C-w>h` |
 | Navigate to window down | `<C-w>t` | `<C-w>j` |
 | Navigate to window up | `<C-w>n` | `<C-w>k` |
