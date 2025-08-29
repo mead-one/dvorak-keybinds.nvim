@@ -141,7 +141,7 @@ function M.enable()
   if tmux_navigator_available() then
     -- Unmap QWERTY bindings for tmux navigation
     for _, mapping in ipairs(tmux_keybinds_qwerty) do
-      pcall(vim.keymap.del("n", mapping.shortcut))
+      pcall(vim.keymap.del, "n", mapping.shortcut)
     end
     -- Re-map Dvorak bindings for tmux navigation
     for _, mapping in ipairs(tmux_keybinds_dvorak) do
@@ -152,7 +152,7 @@ function M.enable()
   if smart_splits_available() then
     -- Unmap QWERTY bindings for smart-splits
     for _, mapping in ipairs(smart_splits_keybinds_qwerty) do
-      pcall(vim.keymap.del("n", mapping.shortcut))
+      pcall(vim.keymap.del, "n", mapping.shortcut)
     end
     -- Set keybinds for smart-splits
     for _, mapping in ipairs(smart_splits_keybinds_dvorak) do
@@ -171,23 +171,23 @@ function M.disable()
 
   -- Unmap global dvorak keybinds
   for _, mapping in ipairs(global_keybinds) do
-    pcall(vim.keymap.del("", mapping.shortcut))
+    pcall(vim.keymap.del, "", mapping.shortcut)
   end
 
   -- Unmap dvorak bindings for normal mode
   for _, mapping in ipairs(normal_mode_keybinds) do
-    pcall(vim.keymap.del("n", mapping.shortcut))
+    pcall(vim.keymap.del, "n", mapping.shortcut)
   end
 
   -- Unmap dvorak bindings for insert mode
   for _, mapping in ipairs(insert_mode_keybinds) do
-    pcall(vim.keymap.del("i", mapping.shortcut))
+    pcall(vim.keymap.del, "i", mapping.shortcut)
   end
 
   -- Unmap Dvorak keybinds for tmux navigation
   if tmux_navigator_available() then
     for _, mapping in ipairs(tmux_keybinds_dvorak) do
-      pcall(vim.keymap.del("n", mapping.shortcut))
+      pcall(vim.keymap.del, "n", mapping.shortcut)
     end
     -- Re-set QWERTY keybinds for tmux navigation
     for _, mapping in ipairs(tmux_keybinds_qwerty) do
@@ -195,14 +195,17 @@ function M.disable()
     end
   end
 
-  -- Unmap Dvorak keybinds for smart-splits
-  -- for _, mapping in pairs(smart_splits_keybinds_dvorak) do
-  --   pcall(vim.keymap.del("n", mapping.shortcut))
-  -- end
-  -- Re-set QWERTY keybinds for smart-splits
-  -- for _, mapping in pairs(smart_splits_keybinds_qwerty) do
-  --   vim.keymap.set("n", mapping.shortcut, mapping.command, {noremap = true, silent = true})
-  -- end
+  if smart_splits_available() then
+    -- Unmap Dvorak keybinds for smart-splits
+    for _, mapping in pairs(smart_splits_keybinds_dvorak) do
+      pcall(vim.keymap.del, "n", mapping.shortcut)
+    end
+    -- Re-set QWERTY keybinds for smart-splits
+    for _, mapping in pairs(smart_splits_keybinds_qwerty) do
+      vim.keymap.set("n", mapping.shortcut, mapping.command, {noremap = true, silent = true})
+    end
+  end
+
   vim.g.dvorak_enabled = false
   print("Dvorak keybinds disabled")
 end
