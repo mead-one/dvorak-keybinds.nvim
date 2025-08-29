@@ -68,7 +68,7 @@ tmux navigation plugins are both installed.
 **Lazy**:
 ```lua
 {
-    "cjm-1/dvorak-keybinds.nvim",
+    "mead-one/dvorak-keybinds.nvim",
     dependencies = {
         -- Ensure these plugins are loaded first, if they are installed
         { "christoomey/vim-tmux-navigator", optional = true },
