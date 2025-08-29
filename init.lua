@@ -1,1 +1,1 @@
-require('dvorak_keybinds').setup()
+require('dvorak_keybinds')
