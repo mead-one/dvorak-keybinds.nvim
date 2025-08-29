@@ -29,8 +29,11 @@ to resolve conflicts with other actions:
 | Navigate to window down | `<C-w>t` | `<C-w>j` |
 | Navigate to window up | `<C-w>n` | `<C-w>k` |
 | Navigate to window right | `<C-w>s` | `<C-w>l` |
-| Navigate next buffer | `<leader>s` | `<leader>l` |
-| Navigate previous buffer | `<leader>h` | `<leader>h` |
+| Navigate next buffer* | `<leader>s` | `<leader>l` |
+| Navigate previous buffer* | `<leader>h` | `<leader>h` |
+
+*These are only available if `leader_buffer_navigation` is set to `true` in the plugin's
+configuration.
 
 ### Insert mode
 
