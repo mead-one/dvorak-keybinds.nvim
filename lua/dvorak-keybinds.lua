@@ -112,10 +112,18 @@ local smart_splits_keybinds_dvorak = {
   {shortcut = "<A-s>", command = "<cmd>lua require('smart-splits').resize_right()<CR>"}
 }
 
+-- Check if christoomey/vim-tmux-navigator is installed
 local function tmux_navigator_available()
   return vim.g.loaded_tmux_navigator == 1 or vim.fn.exists(":TmuxNavigateLeft") > 0
 end
 
+-- Check if alexghergh/nvim-tmux-navigation is installed
+local function tmux_navigation_available()
+  local ok, _ = pcall(require, "nvim-tmux-navigation")
+  return ok
+end
+
+-- Check if mrjones2014/smart-splits.nvim is installed
 local function smart_splits_available()
   local ok, _ = pcall(require, "smart-splits")
   return ok
@@ -138,7 +146,7 @@ function M.enable()
     vim.keymap.set("i", mapping.shortcut, mapping.command, {noremap = true, silent = true})
   end
 
-  if tmux_navigator_available() then
+  if tmux_navigator_available() or tmux_navigation_available() then
     -- Unmap QWERTY bindings for tmux navigation
     for _, mapping in ipairs(tmux_keybinds_qwerty) do
       pcall(vim.keymap.del, "n", mapping.shortcut)
@@ -185,7 +193,7 @@ function M.disable()
   end
 
   -- Unmap Dvorak keybinds for tmux navigation
-  if tmux_navigator_available() then
+  if tmux_navigator_available() or tmux_navigation_available() then
     for _, mapping in ipairs(tmux_keybinds_dvorak) do
       pcall(vim.keymap.del, "n", mapping.shortcut)
     end
