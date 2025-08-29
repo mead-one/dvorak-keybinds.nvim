@@ -139,6 +139,7 @@ function M.enable()
   end
 
   if tmux_navigator_available() then
+    print("Tmux navigator available")
     -- Unmap QWERTY bindings for tmux navigation
     for _, mapping in ipairs(tmux_keybinds_qwerty) do
       pcall(vim.keymap.del, "n", mapping.shortcut)
@@ -150,6 +151,7 @@ function M.enable()
   end
 
   if smart_splits_available() then
+    print("Smart splits available")
     -- Unmap QWERTY bindings for smart-splits
     for _, mapping in ipairs(smart_splits_keybinds_qwerty) do
       pcall(vim.keymap.del, "n", mapping.shortcut)
