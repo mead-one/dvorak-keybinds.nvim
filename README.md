@@ -32,7 +32,7 @@ to resolve conflicts with other actions:
 | Navigate previous buffer** | `<leader>h` | `<leader>h` |
 
 *These are only available if `punctuation_line_navigation` is set to `true` in the plugin's
-configuration.
+configuration.  
 **These are only available if `leader_buffer_navigation` is set to `true` in the plugin's
 configuration.
 
