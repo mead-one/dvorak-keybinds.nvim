@@ -24,6 +24,10 @@ local normal_mode_keybinds = {
   { shortcut = "J", command = "N" },
   -- (S) Bottom of screen (H) Top of screen
   { shortcut = "S", command = "L" },
+  -- (<leader>t{char}) Till character
+  { shortcut = "<leader>t", command = "t" },
+  -- (<leader>T{char}) Till character backwards
+  { shortcut = "<leader>T", command = "T" },
   -- (Ctrl+w d) Navigate to window left
   { shortcut = "<C-w>h", command = "<cmd>wincmd h<CR>" },
   -- (Ctrl+w h) Navigate to window down

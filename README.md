@@ -23,6 +23,8 @@ to resolve conflicts with other actions:
 | Next search result | `j` | `n` |
 | Previous search result | `J` | `N` |
 | Bottom of screen | `S` | `L` |
+| Till character | `<leader>t` | `t` |
+| Till character backwards | `<leader>T` | `T` |
 | Top of screen | `H` | `H` |
 | Navigate to window left | `<C-w>h` | `<C-w>h` |
 | Navigate to window down | `<C-w>t` | `<C-w>j` |
