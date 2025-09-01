@@ -202,7 +202,7 @@ function M.enable()
     -- Set <leader>h, which is the same, regardless of keymap
     vim.keymap.set("n", "<leader>h", "<cmd>bp<CR>", {noremap = true, silent = true})
     -- Map <leader>s
-    vim.keymap.set("n", "<leader>s", "<cmd>bp<CR>", {noremap = true, silent = true})
+    vim.keymap.set("n", "<leader>s", "<cmd>bn<CR>", {noremap = true, silent = true})
   end
 
   vim.g.dvorak_enabled = true
