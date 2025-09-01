@@ -18,8 +18,8 @@ to resolve conflicts with other actions:
 | Move cursor down | `t` | `j` |
 | Move cursor up | `n` | `k` |
 | Move cursor right | `s` | `l` |
-| Move cursor to the start of the line | `_` | `0` |
-| Move cursor to the end of the line | `-` | `$` |
+| Move cursor to the start of the line* | `_` | `0` |
+| Move cursor to the end of the line* | `-` | `$` |
 | Next search result | `j` | `n` |
 | Previous search result | `J` | `N` |
 | Bottom of screen | `S` | `L` |
@@ -28,10 +28,12 @@ to resolve conflicts with other actions:
 | Navigate to window down | `<C-w>t` | `<C-w>j` |
 | Navigate to window up | `<C-w>n` | `<C-w>k` |
 | Navigate to window right | `<C-w>s` | `<C-w>l` |
-| Navigate next buffer* | `<leader>s` | `<leader>l` |
-| Navigate previous buffer* | `<leader>h` | `<leader>h` |
+| Navigate next buffer** | `<leader>s` | `<leader>l` |
+| Navigate previous buffer** | `<leader>h` | `<leader>h` |
 
-*These are only available if `leader_buffer_navigation` is set to `true` in the plugin's
+*These are only available if `punctuation_line_navigation` is set to `true` in the plugin's
+configuration.
+**These are only available if `leader_buffer_navigation` is set to `true` in the plugin's
 configuration.
 
 ### Insert mode
@@ -76,10 +78,12 @@ tmux navigation plugins are both installed.
         { "mrjones2014/smart-splits.nvim", optional = true }
     },
     opts = {
-        -- Enable the keybinds automatically
-        auto_enable = true,
-        -- Use the <leader>h/l/s buffer navigation keybinds
+        -- Enable the _/- for start/end of line navigation, disabled by default
+        punctuation_line_navigation = true,
+        -- Use the <leader>h/l/s buffer navigation keybinds, disabled by default
         leader_buffer_navigation = true
+        -- Enable the keybinds automatically, enabled by default
+        auto_enable = true,
     }
 }
 ```
