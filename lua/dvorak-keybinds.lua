@@ -3,6 +3,7 @@
 
 local M = {}
 
+-- Keybinds for normal, visual, select and operator-pending modes
 local global_keybinds = {
   -- (t) Navigate down (display lines - same line if wrapped text)
   { shortcut = "t", command = "j" },
@@ -120,7 +121,7 @@ function M.enable()
   end
   -- Set global dvorak keybinds
   for _, mapping in ipairs(global_keybinds) do
-    vim.keymap.set("", mapping.shortcut, mapping.command, {noremap = true, silent = true})
+    vim.keymap.set("", mapping.shortcut, mapping.command, {noremap = false, silent = true})
   end
   -- Set keybinds for normal mode
   for _, mapping in ipairs(normal_mode_keybinds) do
