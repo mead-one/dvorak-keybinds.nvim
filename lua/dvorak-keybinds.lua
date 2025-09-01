@@ -3,6 +3,7 @@
 
 local M = {}
 
+-- Keybinds for normal, visual, select, and operator-pending mode
 local function get_global_keybinds()
   return {
     -- (t) Navigate down (display lines - same line if wrapped text)
@@ -122,7 +123,7 @@ function M.enable()
   end
   -- Set global dvorak keybinds
   for _, mapping in ipairs(get_global_keybinds()) do
-    vim.keymap.set("", mapping.shortcut, mapping.command, {noremap = true, silent = true})
+    vim.keymap.set({ "n", "v", "s", "o" }, mapping.shortcut, mapping.command, {noremap = true, silent = true})
   end
   -- Set keybinds for normal mode
   for _, mapping in ipairs(normal_mode_keybinds) do
@@ -159,7 +160,7 @@ function M.enable()
 
   if vim.g.dvorak_punctuation_line_navigation then
     for _, mapping in ipairs(punctuation_line_navigation_keybinds) do
-      vim.keymap.set("", mapping.shortcut, mapping.command, {noremap = true, silent = true})
+      vim.keymap.set({ "n", "v", "s", "o" }, mapping.shortcut, mapping.command, {noremap = true, silent = true})
     end
   end
 
@@ -181,7 +182,7 @@ function M.disable()
 
   -- Unmap global dvorak keybinds
   for _, mapping in ipairs(get_global_keybinds()) do
-    pcall(vim.keymap.del, "", mapping.shortcut)
+    pcall(vim.keymap.del, { "n", "v", "s", "o" }, mapping.shortcut)
   end
 
   -- Unmap dvorak bindings for normal mode
@@ -220,7 +221,7 @@ function M.disable()
 
   if vim.g.dvorak_punctuation_line_navigation then
     for _, mapping in ipairs(punctuation_line_navigation_keybinds) do
-      pcall(vim.keymap.del, "", mapping.shortcut)
+      pcall(vim.keymap.del, { "n", "v", "s", "o" }, mapping.shortcut)
     end
   end
 
