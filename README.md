@@ -78,6 +78,8 @@ tmux navigation plugins are both installed.
         { "mrjones2014/smart-splits.nvim", optional = true }
     },
     opts = {
+        -- Use visual line navigation, disabled by default
+        visual_line_navigation = true,
         -- Enable the _/- for start/end of line navigation, disabled by default
         punctuation_line_navigation = true,
         -- Use the <leader>h/l/s buffer navigation keybinds, disabled by default

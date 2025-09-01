@@ -5,9 +5,9 @@ local M = {}
 
 local global_keybinds = {
   -- (t) Navigate down (display lines - same line if wrapped text)
-  { shortcut = "t", command = "j" },
+  { shortcut = "t", command = vim.g.dvorak_visual_line_navigation and "gj" or "j" },
   -- (n) Navigate up (display lines - same line if wrapped text)
-  { shortcut = "n", command = "k" },
+  { shortcut = "n", command = vim.g.dvorak_visual_line_navigation and "gk" or "k" },
   -- (s) Navigate right (h) Navigate left
   { shortcut = "s", command = "l" },
   -- (h) remains the same
@@ -244,6 +244,7 @@ end
 
 function M.setup(opts)
   local defaults = {
+    visual_line_navigation = false,
     punctuation_line_navigation = false,
     leader_buffer_navigation = false,
     auto_enable = true,
@@ -251,6 +252,7 @@ function M.setup(opts)
 
   opts = vim.tbl_deep_extend("force", defaults, opts or {})
 
+  vim.g.dvorak_visual_line_navigation = opts.visual_line_navigation
   vim.g.dvorak_punctuation_line_navigation = opts.punctuation_line_navigation
   vim.g.dvorak_leader_buffer_navigation = opts.leader_buffer_navigation
 
