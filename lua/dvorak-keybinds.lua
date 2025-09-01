@@ -151,7 +151,7 @@ function M.enable()
     -- Unmap QWERTY bindings for smart-splits and set Dvorak bindings
     for _, mapping in ipairs(smart_splits_keybinds) do
       pcall(vim.keymap.del, "n", mapping.qwerty)
-      vim.keymap.set("n", mapping.dvorak, mapping.mapping, {noremap = true, silent = true})
+      vim.keymap.set("n", mapping.dvorak, mapping.command, {noremap = true, silent = true})
     end
   end
 
