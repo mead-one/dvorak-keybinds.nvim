@@ -3,15 +3,17 @@
 
 local M = {}
 
-local global_keybinds = {
-  -- (t) Navigate down (display lines - same line if wrapped text)
-  { shortcut = "t", command = vim.g.dvorak_visual_line_navigation and "gj" or "j" },
-  -- (n) Navigate up (display lines - same line if wrapped text)
-  { shortcut = "n", command = vim.g.dvorak_visual_line_navigation and "gk" or "k" },
-  -- (s) Navigate right (h) Navigate left
-  { shortcut = "s", command = "l" },
-  -- (h) remains the same
-}
+local function get_global_keybinds()
+  return {
+    -- (t) Navigate down (display lines - same line if wrapped text)
+    { shortcut = "t", command = vim.g.dvorak_visual_line_navigation and "gj" or "j" },
+    -- (n) Navigate up (display lines - same line if wrapped text)
+    { shortcut = "n", command = vim.g.dvorak_visual_line_navigation and "gk" or "k" },
+    -- (s) Navigate right (h) Navigate left
+    { shortcut = "s", command = "l" },
+    -- (h) remains the same
+  }
+end
 
 -- Keybinds for normal mode
 local normal_mode_keybinds = {
@@ -119,7 +121,7 @@ function M.enable()
     return
   end
   -- Set global dvorak keybinds
-  for _, mapping in ipairs(global_keybinds) do
+  for _, mapping in ipairs(get_global_keybinds()) do
     vim.keymap.set("", mapping.shortcut, mapping.command, {noremap = true, silent = true})
   end
   -- Set keybinds for normal mode
@@ -157,7 +159,7 @@ function M.enable()
 
   if vim.g.dvorak_punctuation_line_navigation then
     for _, mapping in ipairs(punctuation_line_navigation_keybinds) do
-      vim.keymap.set("n", mapping.shortcut, mapping.command, {noremap = true, silent = true})
+      vim.keymap.set("", mapping.shortcut, mapping.command, {noremap = true, silent = true})
     end
   end
 
@@ -178,7 +180,7 @@ function M.disable()
   end
 
   -- Unmap global dvorak keybinds
-  for _, mapping in ipairs(global_keybinds) do
+  for _, mapping in ipairs(get_global_keybinds()) do
     pcall(vim.keymap.del, "", mapping.shortcut)
   end
 
@@ -218,7 +220,7 @@ function M.disable()
 
   if vim.g.dvorak_punctuation_line_navigation then
     for _, mapping in ipairs(punctuation_line_navigation_keybinds) do
-      pcall(vim.keymap.del, "n", mapping.shortcut)
+      pcall(vim.keymap.del, "", mapping.shortcut)
     end
   end
 
