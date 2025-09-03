@@ -26,17 +26,18 @@ to resolve conflicts with other actions:
 | Till character | `<leader>t` | `t` |
 | Till character backwards | `<leader>T` | `T` |
 | Top of screen | `H` | `H` |
-| Navigate to window left | `<C-w>h` | `<C-w>h` |
-| Navigate to window down | `<C-w>t` | `<C-w>j` |
-| Navigate to window up | `<C-w>n` | `<C-w>k` |
-| Navigate to window right | `<C-w>s` | `<C-w>l` |
-| Split window horizontally | `<C-w>z` | `<C-w>s` |
-| Navigate next buffer** | `<leader>s` | `<leader>l` |
-| Navigate previous buffer** | `<leader>h` | `<leader>h` |
+| Navigate to window left** | `<C-w>h` | `<C-w>h` |
+| Navigate to window down** | `<C-w>t` | `<C-w>j` |
+| Navigate to window up** | `<C-w>n` | `<C-w>k` |
+| Navigate to window right** | `<C-w>s` | `<C-w>l` |
+| Split window horizontally** | `<C-w>z` | `<C-w>s` |
+| Navigate next buffer*** | `<leader>s` | `<leader>l` |
+| Navigate previous buffer*** | `<leader>h` | `<leader>h` |
 
 *These are only available if `punctuation_line_navigation` is set to `true` in the plugin's
 configuration.  
-**These are only available if `leader_buffer_navigation` is set to `true` in the plugin's
+**These are only available if `window_management` is set to `true` in the plugin's configuration.
+***These are only available if `leader_buffer_navigation` is set to `true` in the plugin's
 configuration.
 
 ### Insert mode
@@ -85,6 +86,8 @@ tmux navigation plugins are both installed.
         visual_line_navigation = true,
         -- Enable the _/- for start/end of line navigation, disabled by default
         punctuation_line_navigation = true,
+        -- Remap the directional Ctrl+w window management commands, disabled by default
+        window_management = true,
         -- Use the <leader>h/l/s buffer navigation keybinds, disabled by default
         leader_buffer_navigation = true
         -- Enable the keybinds automatically, enabled by default

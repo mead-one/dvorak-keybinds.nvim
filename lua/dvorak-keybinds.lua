@@ -27,17 +27,7 @@ local normal_mode_keybinds = {
   -- (<leader>t{char}) Till character
   { shortcut = "<leader>t", command = "t" },
   -- (<leader>T{char}) Till character backwards
-  { shortcut = "<leader>T", command = "T" },
-  -- (Ctrl+w d) Navigate to window left
-  { shortcut = "<C-w>h", command = "<cmd>wincmd h<CR>" },
-  -- (Ctrl+w h) Navigate to window down
-  { shortcut = "<C-w>t", command = "<cmd>wincmd j<CR>" },
-  -- (Ctrl+w t) Navigate to window up
-  { shortcut = "<C-w>n", command = "<cmd>wincmd k<CR>" },
-  -- (Ctrl+w n) Navigate to window right
-  { shortcut = "<C-w>s", command = "<cmd>wincmd l<CR>" },
-  -- (Ctrl+w z) Split window horizontally (replace <C-w>s)
-  { shortcut = "<C-w>z", command = "<cmd>split<CR>" },
+  { shortcut = "<leader>T", command = "T" }
 }
 
 -- Keybinds for insert mode
@@ -58,6 +48,20 @@ local punctuation_line_navigation_keybinds = {
   { shortcut = "-", command = "$" },
   -- (_) Start of line
   { shortcut = "_", command = "^" },
+}
+
+-- Optional keybinds for remapping <C-w> window management commands
+local window_management_keybinds = {
+  -- (Ctrl+w d) Navigate to window left
+  { shortcut = "<C-w>h", command = "<cmd>wincmd h<CR>" },
+  -- (Ctrl+w h) Navigate to window down
+  { shortcut = "<C-w>t", command = "<cmd>wincmd j<CR>" },
+  -- (Ctrl+w t) Navigate to window up
+  { shortcut = "<C-w>n", command = "<cmd>wincmd k<CR>" },
+  -- (Ctrl+w n) Navigate to window right
+  { shortcut = "<C-w>s", command = "<cmd>wincmd l<CR>" },
+  -- (Ctrl+w z) Split window horizontally (replace <C-w>s)
+  { shortcut = "<C-w>z", command = "<cmd>split<CR>" },
 }
 
 -- Optional keybinds for buffer navigation using the leader key
@@ -170,6 +174,12 @@ function M.enable()
     end
   end
 
+  if vim.g.dvorak_window_management then
+    for _, mapping in ipairs(window_management_keybinds) do
+      vim.keymap.set("n", mapping.shortcut, mapping.command, {noremap = true, silent = true})
+    end
+  end
+
   if vim.g.dvorak_leader_buffer_navigation then
     for _, mapping in ipairs(leader_buffer_navigation_keybinds) do
       pcall(vim.keymap.del, "n", mapping.qwerty)
@@ -231,6 +241,12 @@ function M.disable()
     end
   end
 
+  if vim.g.dvorak_window_management then
+    for _, mapping in ipairs(punctuation_line_navigation_keybinds) do
+      pcall(vim.keymap.del, "n", mapping.shortcut)
+    end
+  end
+
   if vim.g.dvorak_leader_buffer_navigation then
     for _, mapping in ipairs(leader_buffer_navigation_keybinds) do
       pcall(vim.keymap.del, "n", mapping.dvorak)
@@ -255,6 +271,7 @@ function M.setup(opts)
   local defaults = {
     visual_line_navigation = false,
     punctuation_line_navigation = false,
+    window_management = false,
     leader_buffer_navigation = false,
     auto_enable = true,
   }
@@ -263,6 +280,7 @@ function M.setup(opts)
 
   vim.g.dvorak_visual_line_navigation = opts.visual_line_navigation
   vim.g.dvorak_punctuation_line_navigation = opts.punctuation_line_navigation
+  vim.g.dvorak_window_management = opts.window_management
   vim.g.dvorak_leader_buffer_navigation = opts.leader_buffer_navigation
 
   vim.api.nvim_create_user_command("DvorakToggle", function()
