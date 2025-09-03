@@ -36,6 +36,8 @@ local normal_mode_keybinds = {
   { shortcut = "<C-w>n", command = "<cmd>wincmd k<CR>" },
   -- (Ctrl+w n) Navigate to window right
   { shortcut = "<C-w>s", command = "<cmd>wincmd l<CR>" },
+  -- (Ctrl+w z) Split window horizontally (replace <C-w>s)
+  { shortcut = "<C-w>z", command = "<cmd>wincmd l<CR>" },
 }
 
 -- Keybinds for insert mode

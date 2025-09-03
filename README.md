@@ -30,6 +30,7 @@ to resolve conflicts with other actions:
 | Navigate to window down | `<C-w>t` | `<C-w>j` |
 | Navigate to window up | `<C-w>n` | `<C-w>k` |
 | Navigate to window right | `<C-w>s` | `<C-w>l` |
+| Split window horizontally | `<C-w>z` | `<C-w>s` |
 | Navigate next buffer** | `<leader>s` | `<leader>l` |
 | Navigate previous buffer** | `<leader>h` | `<leader>h` |
 
