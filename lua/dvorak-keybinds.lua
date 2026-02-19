@@ -117,14 +117,12 @@ end
 
 -- Check if alexghergh/nvim-tmux-navigation is installed
 local function tmux_navigation_available()
-  local ok, _ = pcall(require, "nvim-tmux-navigation")
-  return ok
+	return package.loaded["nvim-tmux-navigation"] or vim.fn.exists(":NvimTmuxNavigateLeft") > 0
 end
 
 -- Check if mrjones2014/smart-splits.nvim is installed
 local function smart_splits_available()
-  local ok, _ = pcall(require, "smart-splits")
-  return ok
+	return package.loaded["smart-splits"] or vim.fn.exists(":SmartResizeMode") > 0
 end
 
 function M.enable()
