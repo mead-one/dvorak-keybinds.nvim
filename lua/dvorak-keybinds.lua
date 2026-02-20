@@ -30,7 +30,7 @@ local normal_keybinds = {
 	-- (J) Previous search result
 	{ lhs = "J", rhs = "N" },
 	-- (S) Bottom of screen (H) Top of screen
-	{ lhs = "S", rhs = "L" },
+	{ lhs = "S", rhs = "L", opts = { remap = true } },
 	-- (<leader>t{char}) Till character
 	{ lhs = "<leader>t", rhs = "t" },
 	-- (<leader>T{char}) Till character backwards
@@ -225,7 +225,7 @@ local function restore_baseline()
 				vim.keymap.set(mode, lhs, map.rhs or map.callback, {
 					silent = map.silent == 1,
 					expr = map.expr == 1,
-					noremap = map.noremap == 1,
+					remap = map.remap == 1,
 					nowait = map.nowait == 1,
 					desc = map.desc,
 				})
@@ -249,44 +249,52 @@ local function set(modes, lhs, rhs, opts)
 	vim.keymap.set(modes, lhs, rhs, opts)
 end
 
-local o = { noremap = true, silent = true }
+local function map_opts(m)
+	-- Default values
+	local o = { remap = false, silent = true }
+
+	if m.opts then
+		for k, v in pairs(m.opts) do
+			o[k] = v
+		end
+	end
+	return o
+end
 
 local function apply()
 	for _, m in ipairs(global_keybinds()) do
-		set({ "n", "v", "s", "o" }, m.lhs, m.rhs, o)
+		set({ "n", "v", "s", "o" }, m.lhs, m.rhs, map_opts(m))
 	end
 	for _, m in ipairs(normal_keybinds) do
-		set("n", m.lhs, m.rhs, o)
+		set("n", m.lhs, m.rhs, map_opts(m))
 	end
 	for _, m in ipairs(insert_keybinds) do
-		set("i", m.lhs, m.rhs, o)
+		set("i", m.lhs, m.rhs, map_opts(m))
 	end
 
 	for _, group in ipairs(plugin_keybinds) do
 		if group.check() then
 			for _, m in ipairs(group.binds) do
-				pcall(vim.keymap.del, m.modes, m.qwerty)
-				set(m.modes, m.lhs, m.rhs, o)
+				set(m.modes, m.lhs, m.rhs, map_opts(m))
 			end
 		end
 	end
 
 	if M.opts.punctuation_line_navigation then
 		for _, m in ipairs(punctuation_keybinds) do
-			set({ "n", "v", "s", "o" }, m.lhs, m.rhs, o)
+			set({ "n", "v", "s", "o" }, m.lhs, m.rhs, map_opts(m))
 		end
 	end
 
 	if M.opts.window_management then
 		for _, m in ipairs(window_keybinds) do
-			set("n", m.lhs, m.rhs, o)
+			set("n", m.lhs, m.rhs, map_opts(m))
 		end
 	end
 
 	if M.opts.leader_buffer_navigation then
 		for _, m in ipairs(buffer_keybinds) do
-			pcall(vim.keymap.del, "n", m.qwerty)
-			set("n", m.lhs, m.rhs, o)
+			set("n", m.lhs, m.rhs, map_opts(m))
 		end
 	end
 end
