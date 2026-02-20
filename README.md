@@ -26,19 +26,23 @@ to resolve conflicts with other actions:
 | Till character | `<leader>t` | `t` |
 | Till character backwards | `<leader>T` | `T` |
 | Top of screen | `H` | `H` |
-| Navigate to window left** | `<C-w>h` | `<C-w>h` |
-| Navigate to window down** | `<C-w>t` | `<C-w>j` |
-| Navigate to window up** | `<C-w>n` | `<C-w>k` |
-| Navigate to window right** | `<C-w>s` | `<C-w>l` |
-| Split window horizontally** | `<C-w>z` | `<C-w>s` |
-| Navigate next buffer*** | `<leader>s` | `<leader>l` |
-| Navigate previous buffer*** | `<leader>h` | `<leader>h` |
+| Navigate to window left\*\* | `<C-w>h` | `<C-w>h` |
+| Navigate to window down\*\* | `<C-w>t` | `<C-w>j` |
+| Navigate to window up\*\* | `<C-w>n` | `<C-w>k` |
+| Navigate to window right\*\* | `<C-w>s` | `<C-w>l` |
+| Split window horizontally\*\* | `<C-w>z` | `<C-w>s` |
+| Navigate next buffer\*\*\* | `<leader>s` | `<leader>l` |
+| Navigate previous buffer\*\*\* | `<leader>h` | `<leader>h` |
+| flash.nvim jump \*\*\*\* | gz | s |
+| flash.nvim treesitter \*\*\*\* | gZ | s |
+| flash.nvim toggle \*\*\*\* | \<C-/\> | \<C-s\> |
 
-*These are only available if `punctuation_line_navigation` is set to `true` in the plugin's
-configuration.  
-**These are only available if `window_management` is set to `true` in the plugin's configuration.
-***These are only available if `leader_buffer_navigation` is set to `true` in the plugin's
-configuration.
+\* These are only available if `punctuation_line_navigation` is set to `true` in the plugin's
+configuration.<br />
+\*\* These are only available if `window_management` is set to `true` in the plugin's configuration.<br />
+\*\*\* These are only available if `leader_buffer_navigation` is set to `true` in the plugin's
+configuration.<br />
+\*\*\*\* These are only available if folke/flash.nvim is installed.
 
 ### Insert mode
 
@@ -48,6 +52,11 @@ configuration.
 | Move cursor down | `<C-t>` | `<C-j>` |
 | Move cursor up | `<C-n>` | `<C-k>` |
 | Move cursor right | `<C-s>` | `<C-l>` |
+| flash.nvim jump * | gz | s |
+| flash.nvim treesitter * | gZ | s |
+| flash.nvim toggle * | \<C-/\> | \<C-s\> |
+
+\* These are only available if folke/flash.nvim is installed.
 
 ### Commands
 
@@ -75,12 +84,6 @@ tmux navigation plugins are both installed.
 ```lua
 {
     "mead-one/dvorak-keybinds.nvim",
-    dependencies = {
-        -- Ensure these plugins are loaded first, if they are installed
-        { "christoomey/vim-tmux-navigator", optional = true },
-        { "alexghergh/nvim-tmux-navigation", optional = true },
-        { "mrjones2014/smart-splits.nvim", optional = true }
-    },
     opts = {
         -- Use visual line navigation, disabled by default
         visual_line_navigation = true,
