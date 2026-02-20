@@ -90,7 +90,6 @@ local function get_global_keybinds()
 	}
 end
 
--- Keybinds for normal mode
 local normal_mode_keybinds = {
 	-- (j) Next search result
 	{ shortcut = "j", command = "n" },
@@ -104,7 +103,6 @@ local normal_mode_keybinds = {
 	{ shortcut = "<leader>T", command = "T" },
 }
 
--- Keybinds for insert mode
 local insert_mode_keybinds = {
 	-- (Ctrl+d) Move cursor left
 	{ shortcut = "<C-h>", command = "<Left>" },
@@ -116,7 +114,6 @@ local insert_mode_keybinds = {
 	{ shortcut = "<C-s>", command = "<Right>" },
 }
 
--- Optional keybinds for punctuation line navigation
 local punctuation_line_navigation_keybinds = {
 	-- (-) End of line
 	{ shortcut = "-", command = "$" },
@@ -124,7 +121,6 @@ local punctuation_line_navigation_keybinds = {
 	{ shortcut = "_", command = "^" },
 }
 
--- Optional keybinds for remapping <C-w> window management commands
 local window_management_keybinds = {
 	-- (Ctrl+w d) Navigate to window left
 	{ shortcut = "<C-w>h", command = "<cmd>wincmd h<CR>" },
@@ -138,13 +134,11 @@ local window_management_keybinds = {
 	{ shortcut = "<C-w>z", command = "<cmd>split<CR>" },
 }
 
--- Optional keybinds for buffer navigation using the leader key
 local leader_buffer_navigation_keybinds = {
 	{ dvorak = "<leader>h", qwerty = "<leader>h", command = "<cmd>bp<CR>" },
 	{ dvorak = "<leader>s", qwerty = "<leader>l", command = "<cmd>bn<CR>" },
 }
 
--- Dvorak keybinds for vim-tmux-navigator
 local vim_tmux_keybinds = {
 	-- (Ctrl+h) Focus window left
 	{ dvorak = "<C-h>", qwerty = "<C-h>", command = "<cmd>TmuxNavigateLeft<CR>" },
@@ -156,7 +150,6 @@ local vim_tmux_keybinds = {
 	{ dvorak = "<C-s>", qwerty = "<C-l>", command = "<cmd>TmuxNavigateRight<CR>" },
 }
 
--- Keybinds for nvim-tmux-navigation
 local nvim_tmux_keybinds = {
 	-- (Ctrl+h) Focus window left
 	{ dvorak = "<C-h>", qwerty = "<C-h>", command = "<cmd>NvimTmuxNavigateLeft<CR>" },
@@ -168,50 +161,223 @@ local nvim_tmux_keybinds = {
 	{ dvorak = "<C-s>", qwerty = "<C-l>", command = "<cmd>NvimTmuxNavigateRight<CR>" },
 }
 
--- Keybinds for smart-splits
 local smart_splits_keybinds = {
-	-- (Ctrl+t) Move cursor down
 	{ dvorak = "<C-t>", qwerty = "<C-j>", command = "<cmd>lua require('smart-splits').move_cursor_down()<CR>" },
-	-- (Ctrl+n) Move cursor up
 	{ dvorak = "<C-n>", qwerty = "<C-k>", command = "<cmd>lua require('smart-splits').move_cursor_up()<CR>" },
-	-- (Ctrl+s) Move cursor right, (Ctrl+h) Move cursor left
 	{ dvorak = "<C-s>", qwerty = "<C-l>", command = "<cmd>lua require('smart-splits').move_cursor_right()<CR>" },
-	-- (Ctrl+t) Resize vertical down
 	{ dvorak = "<A-t>", qwerty = "<A-j>", command = "<cmd>lua require('smart-splits').resize_down()<CR>" },
-	-- (Ctrl+n) Resize vertical up
 	{ dvorak = "<A-n>", qwerty = "<A-k>", command = "<cmd>lua require('smart-splits').resize_up()<CR>" },
-	-- (Ctrl+l) Resize horizontal right, (Ctrl+h) Resize horizontal left
 	{ dvorak = "<A-s>", qwerty = "<A-l>", command = "<cmd>lua require('smart-splits').resize_right()<CR>" },
 }
 
--- Check if christoomey/vim-tmux-navigator is installed
+-- Snapshot keymaps before overwriting them
+M._saved_maps = {}
+M._baseline_captured = false
+M.enabled = false
+
+-- Ensure even single modes in mappings are inside a table
+local function normalise_modes(modes)
+	if type(modes) == "string" then
+		return { modes }
+	end
+	return modes
+end
+
+-- Snapshot a key ONLY if we haven't already stored it (preserves originals)
+local function snapshot_key(mode, lhs)
+	M._saved_maps[mode] = M._saved_maps[mode] or {}
+	if M._saved_maps[mode][lhs] ~= nil then
+		return -- already captured, don't overwrite
+	end
+
+	local found = false
+	for _, map in ipairs(vim.api.nvim_get_keymap(mode)) do
+		if map.lhs == lhs then
+			M._saved_maps[mode][lhs] = map
+			found = true
+			break
+		end
+	end
+
+	if not found then
+		M._saved_maps[mode][lhs] = false -- explicitly unmapped
+	end
+end
+
+-- Set a keymap, snapshotting the current binding first if baseline captured
+M.map = function(modes, lhs, rhs, opts)
+	modes = normalise_modes(modes)
+
+	-- Only snapshot here if baseline was already captured (i.e. not first-run)
+	if M._baseline_captured then
+		for _, mode in ipairs(modes) do
+			snapshot_key(mode, lhs)
+		end
+	end
+
+	vim.keymap.set(modes, lhs, rhs, opts)
+end
+
+-- Snapshot all keys this plugin will touch, before we touch them
+M.capture_baseline = function()
+	if M._baseline_captured then
+		return
+	end
+
+	-- Build a unified list of all (mode, lhs) pairs we will map
+	local to_snapshot = {}
+
+	local function add(modes, lhs)
+		modes = normalise_modes(modes)
+		for _, mode in ipairs(modes) do
+			table.insert(to_snapshot, { mode = mode, lhs = lhs })
+		end
+	end
+
+	for _, mapping in ipairs(get_global_keybinds()) do
+		add({ "n", "v", "s", "o" }, mapping.shortcut)
+	end
+	for _, mapping in ipairs(normal_mode_keybinds) do
+		add("n", mapping.shortcut)
+	end
+	for _, mapping in ipairs(insert_mode_keybinds) do
+		add("i", mapping.shortcut)
+	end
+	for _, mapping in ipairs(punctuation_line_navigation_keybinds) do
+		add({ "n", "v", "s", "o" }, mapping.shortcut)
+	end
+	for _, mapping in ipairs(window_management_keybinds) do
+		add("n", mapping.shortcut)
+	end
+	-- Plugin keybinds use .dvorak as the lhs
+	for _, mapping in ipairs(vim_tmux_keybinds) do
+		add("n", mapping.dvorak)
+	end
+	for _, mapping in ipairs(nvim_tmux_keybinds) do
+		add("n", mapping.dvorak)
+	end
+	for _, mapping in ipairs(smart_splits_keybinds) do
+		add("n", mapping.dvorak)
+	end
+	for _, mapping in ipairs(leader_buffer_navigation_keybinds) do
+		add("n", mapping.dvorak)
+	end
+
+	M._saved_maps = {}
+	for _, entry in ipairs(to_snapshot) do
+		snapshot_key(entry.mode, entry.lhs)
+	end
+
+	M._baseline_captured = true
+end
+
+-- Restore all snapshotted keymaps to their pre-plugin state
+M.restore_maps = function()
+	for mode, maps in pairs(M._saved_maps) do
+		for lhs, map in pairs(maps) do
+			-- Silently delete the current binding (may or may not exist)
+			pcall(vim.keymap.del, mode, lhs)
+
+			-- Restore original if there was one
+			if map then
+				vim.keymap.set(mode, lhs, map.rhs or map.callback, {
+					silent = map.silent == 1,
+					expr = map.expr == 1,
+					noremap = map.noremap == 1,
+					nowait = map.nowait == 1,
+					desc = map.desc,
+				})
+			end
+		end
+	end
+
+	M._saved_maps = {}
+end
+
+-- Keybinds for normal, visual, select, and operator-pending mode
+local function get_global_keybinds()
+	return {
+		{ shortcut = "t", command = M.opts.visual_line_navigation and "gj" or "j" },
+		{ shortcut = "n", command = M.opts.visual_line_navigation and "gk" or "k" },
+		{ shortcut = "s", command = "l" },
+	}
+end
+
+local normal_mode_keybinds = {
+	{ shortcut = "j", command = "n" },
+	{ shortcut = "J", command = "N" },
+	{ shortcut = "S", command = "L" },
+	{ shortcut = "<leader>t", command = "t" },
+	{ shortcut = "<leader>T", command = "T" },
+}
+
+local insert_mode_keybinds = {
+	{ shortcut = "<C-h>", command = "<Left>" },
+	{ shortcut = "<C-t>", command = "<Down>" },
+	{ shortcut = "<C-n>", command = "<Up>" },
+	{ shortcut = "<C-s>", command = "<Right>" },
+}
+
+local punctuation_line_navigation_keybinds = {
+	{ shortcut = "-", command = "$" },
+	{ shortcut = "_", command = "^" },
+}
+
+local window_management_keybinds = {
+	{ shortcut = "<C-w>h", command = "<cmd>wincmd h<CR>" },
+	{ shortcut = "<C-w>t", command = "<cmd>wincmd j<CR>" },
+	{ shortcut = "<C-w>n", command = "<cmd>wincmd k<CR>" },
+	{ shortcut = "<C-w>s", command = "<cmd>wincmd l<CR>" },
+	{ shortcut = "<C-w>z", command = "<cmd>split<CR>" },
+}
+
+local leader_buffer_navigation_keybinds = {
+	{ dvorak = "<leader>h", qwerty = "<leader>h", command = "<cmd>bp<CR>" },
+	{ dvorak = "<leader>s", qwerty = "<leader>l", command = "<cmd>bn<CR>" },
+}
+
+local vim_tmux_keybinds = {
+	{ dvorak = "<C-h>", qwerty = "<C-h>", command = "<cmd>TmuxNavigateLeft<CR>" },
+	{ dvorak = "<C-t>", qwerty = "<C-j>", command = "<cmd>TmuxNavigateDown<CR>" },
+	{ dvorak = "<C-n>", qwerty = "<C-k>", command = "<cmd>TmuxNavigateUp<CR>" },
+	{ dvorak = "<C-s>", qwerty = "<C-l>", command = "<cmd>TmuxNavigateRight<CR>" },
+}
+
+local nvim_tmux_keybinds = {
+	{ dvorak = "<C-h>", qwerty = "<C-h>", command = "<cmd>NvimTmuxNavigateLeft<CR>" },
+	{ dvorak = "<C-t>", qwerty = "<C-j>", command = "<cmd>NvimTmuxNavigateDown<CR>" }, -- fixed: was "C-j>"
+	{ dvorak = "<C-n>", qwerty = "<C-k>", command = "<cmd>NvimTmuxNavigateUp<CR>" },
+	{ dvorak = "<C-s>", qwerty = "<C-l>", command = "<cmd>NvimTmuxNavigateRight<CR>" },
+}
+
+local smart_splits_keybinds = {
+	{ dvorak = "<C-t>", qwerty = "<C-j>", command = "<cmd>lua require('smart-splits').move_cursor_down()<CR>" },
+	{ dvorak = "<C-n>", qwerty = "<C-k>", command = "<cmd>lua require('smart-splits').move_cursor_up()<CR>" },
+	{ dvorak = "<C-s>", qwerty = "<C-l>", command = "<cmd>lua require('smart-splits').move_cursor_right()<CR>" },
+	{ dvorak = "<A-t>", qwerty = "<A-j>", command = "<cmd>lua require('smart-splits').resize_down()<CR>" },
+	{ dvorak = "<A-n>", qwerty = "<A-k>", command = "<cmd>lua require('smart-splits').resize_up()<CR>" },
+	{ dvorak = "<A-s>", qwerty = "<A-l>", command = "<cmd>lua require('smart-splits').resize_right()<CR>" },
+}
+
 local function tmux_navigator_available()
 	return vim.g.loaded_tmux_navigator == 1 or vim.fn.exists(":TmuxNavigateLeft") > 0
 end
 
--- Check if alexghergh/nvim-tmux-navigation is installed
 local function tmux_navigation_available()
 	return package.loaded["nvim-tmux-navigation"] or vim.fn.exists(":NvimTmuxNavigateLeft") > 0
 end
 
--- Check if mrjones2014/smart-splits.nvim is installed
 local function smart_splits_available()
 	return package.loaded["smart-splits"] or vim.fn.exists(":SmartResizeMode") > 0
 end
 
-function M.enable()
-	if vim.g.dvorak_enabled and vim.g.dvorak_enabled == true then
-		return
-	end
-	-- Set global dvorak keybinds
+M.apply_all_mappings = function()
 	for _, mapping in ipairs(get_global_keybinds()) do
 		M.map({ "n", "v", "s", "o" }, mapping.shortcut, mapping.command, { noremap = true, silent = true })
 	end
-	-- Set keybinds for normal mode
 	for _, mapping in ipairs(normal_mode_keybinds) do
 		M.map("n", mapping.shortcut, mapping.command, { noremap = true, silent = true })
 	end
-	-- Set keybinds for insert mode
 	for _, mapping in ipairs(insert_mode_keybinds) do
 		M.map("i", mapping.shortcut, mapping.command, { noremap = true, silent = true })
 	end
@@ -258,25 +424,33 @@ function M.enable()
 			M.map("n", mapping.dvorak, mapping.command, { noremap = true, silent = true })
 		end
 	end
+end
 
+M.enable = function()
+	if M.enabled then
+		M.apply_all_mappings()
+		return
+	end
+
+	M.enabled = true
 	vim.g.dvorak_enabled = true
+	M.apply_all_mappings()
 	print("Dvorak keybinds enabled")
 end
 
-function M.disable()
-	if not vim.g.dvorak_enabled then
+M.disable = function()
+	if not M.enabled then
 		return
 	end
 
 	M.restore_maps()
-
+	M.enabled = false
 	vim.g.dvorak_enabled = false
 	print("Dvorak keybinds disabled")
 end
 
--- Toggle Dvorak keybinds on and off
 function M.toggle()
-	if vim.g.dvorak_enabled and vim.g.dvorak_enabled == true then
+	if M.enabled then
 		M.disable()
 	else
 		M.enable()
@@ -297,18 +471,43 @@ function M.setup(opts)
 	vim.api.nvim_create_user_command("DvorakToggle", function()
 		M.toggle()
 	end, { desc = "Toggle Dvorak keybinds" })
-
 	vim.api.nvim_create_user_command("DvorakEnable", function()
 		M.enable()
 	end, { desc = "Enable Dvorak keybinds" })
-
 	vim.api.nvim_create_user_command("DvorakDisable", function()
 		M.disable()
 	end, { desc = "Disable Dvorak keybinds" })
 
-	if opts.auto_enable then
-		M.enable()
+	-- Capture baseline and (re)apply after all plugins have loaded.
+	-- LazyDone fires in lazy.nvim distributions; VimEnter is the fallback.
+	-- We guard with _baseline_captured so only the first event wins.
+	local function on_plugins_loaded()
+		if not M._baseline_captured then
+			M.capture_baseline()
+		end
+		if M.opts.auto_enable then
+			-- Reset enabled flag so enable() runs fresh after baseline is ready
+			M.enabled = false
+			vim.g.dvorak_enabled = false
+			M.enable()
+		end
 	end
+
+	vim.api.nvim_create_autocmd("User", {
+		pattern = "LazyDone",
+		once = true,
+		callback = on_plugins_loaded,
+	})
+
+	vim.api.nvim_create_autocmd("VimEnter", {
+		once = true,
+		callback = function()
+			-- Only fire if LazyDone hasn't already handled it
+			if not M._baseline_captured then
+				on_plugins_loaded()
+			end
+		end,
+	})
 end
 
 return M
