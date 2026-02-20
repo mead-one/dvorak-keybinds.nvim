@@ -84,6 +84,12 @@ tmux navigation plugins are both installed.
 ```lua
 {
     "mead-one/dvorak-keybinds.nvim",
+    dependencies = {
+      -- Ensure this runs after flash.nvim if it is installed. This plugin will set
+      -- appropriate keybinds to replace flash's defaults, as documented in the above
+      -- table. No effect if flash is not installed
+      { "folke/flash.nvim", optional = true }
+    },
     opts = {
         -- Use visual line navigation, disabled by default
         visual_line_navigation = true,
