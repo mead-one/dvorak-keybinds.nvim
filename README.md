@@ -68,8 +68,12 @@ The following commands are available:
 
 ## Plugins
 
+In my experience so far, this plugin seems to work well with LazyVim, and has an
+optional integration to work with Snacks, applying Dvorak-friendly keymaps to its menus.
+
 The following plugins are supported:
 
+- [folke/flash.nvim](https://github.com/folke/flash.nvim)
 - [christoomey/vim-tmux-navigator](https://github.com/christoomey/vim-tmux-navigator)
 - [alexghergh/nvim-tmux-navigation](https://github.com/alexghergh/nvim-tmux-navigation)
 - [mrjones2014/smart-splits.nvim](https://github.com/mrjones2014/smart-splits.nvim)
@@ -102,8 +106,17 @@ tmux navigation plugins are both installed.
         -- Enable the keybinds automatically, enabled by default
         auto_enable = true,
     }
+},
+-- Apply the optional integration with snacks, if it is installed (optional = true)
+{
+    "folke/snacks.nvim",
+    optional = true,
+    opts = function(_, opts)
+        -- Extend the existing opts with those in the integration
+        return require("dvorak-keybinds").integrations.snacks(opts)
+    end,
 }
 ```
 
-Suggestions and PRs are welcome.
+All suggestions, constructive feedback and PRs are welcome.
 
