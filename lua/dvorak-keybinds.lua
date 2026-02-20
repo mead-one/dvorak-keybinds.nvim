@@ -75,33 +75,52 @@ local buffer_keybinds = {
 
 local vim_tmux_keybinds = {
 	-- (Ctrl+h) Focus window left
-	{ lhs = "<C-h>", qwerty = "<C-h>", rhs = "<cmd>TmuxNavigateLeft<CR>" },
+	{ modes = { "n" }, lhs = "<C-h>", qwerty = "<C-h>", rhs = "<cmd>TmuxNavigateLeft<CR>" },
 	-- (Ctrl+t) Focus window below
-	{ lhs = "<C-t>", qwerty = "<C-j>", rhs = "<cmd>TmuxNavigateDown<CR>" },
+	{ modes = { "n" }, lhs = "<C-t>", qwerty = "<C-j>", rhs = "<cmd>TmuxNavigateDown<CR>" },
 	-- (Ctrl+n) Focus window above
-	{ lhs = "<C-n>", qwerty = "<C-k>", rhs = "<cmd>TmuxNavigateUp<CR>" },
+	{ modes = { "n" }, lhs = "<C-n>", qwerty = "<C-k>", rhs = "<cmd>TmuxNavigateUp<CR>" },
 	-- (Ctrl+s) Focus window right
-	{ lhs = "<C-s>", qwerty = "<C-l>", rhs = "<cmd>TmuxNavigateRight<CR>" },
+	{ modes = { "n" }, lhs = "<C-s>", qwerty = "<C-l>", rhs = "<cmd>TmuxNavigateRight<CR>" },
 }
 
 local nvim_tmux_keybinds = {
 	-- (Ctrl+h) Focus window left
-	{ lhs = "<C-h>", qwerty = "<C-h>", rhs = "<cmd>NvimTmuxNavigateLeft<CR>" },
+	{ modes = { "n" }, lhs = "<C-h>", qwerty = "<C-h>", rhs = "<cmd>NvimTmuxNavigateLeft<CR>" },
 	-- (Ctrl+t) Focus window below
-	{ lhs = "<C-t>", qwerty = "C-j>", rhs = "<cmd>NvimTmuxNavigateDown<CR>" },
+	{ modes = { "n" }, lhs = "<C-t>", qwerty = "C-j>", rhs = "<cmd>NvimTmuxNavigateDown<CR>" },
 	-- (Ctrl+n) Focus window above
-	{ lhs = "<C-n>", qwerty = "<C-k>", rhs = "<cmd>NvimTmuxNavigateUp<CR>" },
+	{ modes = { "n" }, lhs = "<C-n>", qwerty = "<C-k>", rhs = "<cmd>NvimTmuxNavigateUp<CR>" },
 	-- (Ctrl+s) Focus window right
-	{ lhs = "<C-s>", qwerty = "<C-l>", rhs = "<cmd>NvimTmuxNavigateRight<CR>" },
+	{ modes = { "n" }, lhs = "<C-s>", qwerty = "<C-l>", rhs = "<cmd>NvimTmuxNavigateRight<CR>" },
 }
 
 local smart_splits_keybinds = {
-	{ lhs = "<C-t>", qwerty = "<C-j>", rhs = "<cmd>lua require('smart-splits').move_cursor_down()<CR>" },
-	{ lhs = "<C-n>", qwerty = "<C-k>", rhs = "<cmd>lua require('smart-splits').move_cursor_up()<CR>" },
-	{ lhs = "<C-s>", qwerty = "<C-l>", rhs = "<cmd>lua require('smart-splits').move_cursor_right()<CR>" },
-	{ lhs = "<A-t>", qwerty = "<A-j>", rhs = "<cmd>lua require('smart-splits').resize_down()<CR>" },
-	{ lhs = "<A-n>", qwerty = "<A-k>", rhs = "<cmd>lua require('smart-splits').resize_up()<CR>" },
-	{ lhs = "<A-s>", qwerty = "<A-l>", rhs = "<cmd>lua require('smart-splits').resize_right()<CR>" },
+	{
+		modes = { "n" },
+		lhs = "<C-t>",
+		qwerty = "<C-j>",
+		rhs = "<cmd>lua require('smart-splits').move_cursor_down()<CR>",
+	},
+	{ modes = { "n" }, lhs = "<C-n>", qwerty = "<C-k>", rhs = "<cmd>lua require('smart-splits').move_cursor_up()<CR>" },
+	{
+		modes = { "n" },
+		lhs = "<C-s>",
+		qwerty = "<C-l>",
+		rhs = "<cmd>lua require('smart-splits').move_cursor_right()<CR>",
+	},
+	{ modes = { "n" }, lhs = "<A-t>", qwerty = "<A-j>", rhs = "<cmd>lua require('smart-splits').resize_down()<CR>" },
+	{ modes = { "n" }, lhs = "<A-n>", qwerty = "<A-k>", rhs = "<cmd>lua require('smart-splits').resize_up()<CR>" },
+	{ modes = { "n" }, lhs = "<A-s>", qwerty = "<A-l>", rhs = "<cmd>lua require('smart-splits').resize_right()<CR>" },
+}
+
+local flash_keybinds = {
+	-- (gz) Flash jump
+	{ modes = { "n", "x", "o" }, lhs = "gz", qwerty = "s", rhs = "<cmd>lua require('flash').jump()<CR>" },
+	-- (gZ) Flash treesitter
+	{ modes = { "n", "x", "o" }, lhs = "gZ", qwerty = "S", rhs = "<cmd>lua require('flash').treesitter()<CR>" },
+	-- (Ctrl+/) Toggle flash search
+	{ modes = { "c" }, lhs = "<C-/>", qwerty = "<C-s>", rhs = "<cmd>lua require('flash').toggle()<CR>" },
 }
 
 --------------------------------------------------------------------------------
@@ -130,6 +149,12 @@ local plugin_keybinds = {
 			return has_plugin("smart-splits", ":SmartResizeMode")
 		end,
 		binds = smart_splits_keybinds,
+	},
+	{
+		check = function()
+			return has_plugin("flash", ":Flash")
+		end,
+		binds = flash_keybinds,
 	},
 }
 
@@ -182,7 +207,7 @@ local function capture_baseline()
 	-- Plugin keybinds use .dvorak as the lhs
 	for _, group in ipairs(plugin_keybinds) do
 		for _, m in ipairs(group.binds) do
-			snap("n", m.lhs)
+			snap(m.modes, m.lhs)
 		end
 	end
 end
@@ -240,8 +265,8 @@ local function apply()
 	for _, group in ipairs(plugin_keybinds) do
 		if group.check() then
 			for _, m in ipairs(group.binds) do
-				pcall(vim.keymap.del, "n", m.qwerty)
-				set("n", m.lhs, m.rhs, o)
+				pcall(vim.keymap.del, m.modes, m.qwerty)
+				set(m.modes, m.lhs, m.rhs, o)
 			end
 		end
 	end
@@ -294,6 +319,38 @@ function M.toggle()
 	else
 		M.enable()
 	end
+end
+
+--------------------------------------------------------------------------------
+-- Integrations
+--------------------------------------------------------------------------------
+
+M.integrations = {}
+
+M.integrations.snacks = function(opts)
+	-- Ensure nested tables exist
+	opts = opts or {}
+	opts.picker = opts.picker or {}
+	opts.picker.win = opts.picker.win or {}
+
+	local function patch_keys(win_opts)
+		win_opts.keys = vim.tbl_extend("force", win_opts.keys or {}, {
+			["<C-t>"] = { "list_down", mode = { "i", "n" } },
+			["<C-n>"] = { "list_up", mode = { "i", "n" } },
+			["<C-s>"] = false,
+			["<C-z>"] = { "edit_split", mode = { "i", "n" }, desc = "Open in Split" },
+			["<C-e>"] = { "tab", mode = { "i", "n" }, desc = "Open in Tab" },
+			["j"] = false,
+			["k"] = false,
+			["t"] = "list_down",
+			["n"] = "list_up",
+		})
+	end
+
+	opts.picker.win.input = opts.picker.win.input or {}
+	patch_keys(opts.picker.win.input)
+
+	return opts
 end
 
 --------------------------------------------------------------------------------
