@@ -4,6 +4,7 @@
 local M = {}
 
 M.enabled = false
+M.index = nil
 -- Snapshot mappings before setting them
 M.baseline = {}
 
@@ -159,76 +160,124 @@ local plugin_keybinds = {
 }
 
 --------------------------------------------------------------------------------
+-- Build index
+--------------------------------------------------------------------------------
+
+-- Build flat lookup of all dvorak mappings: [mode][lhs] = { rhs, opts }
+local function build_dvorak_index()
+	local index = {}
+	local function add(modes, lhs, rhs, opts)
+		modes = type(modes) == "string" and { modes } or modes
+		for _, mode in ipairs(modes) do
+			index[mode] = index[mode] or {}
+			index[mode][lhs] = { rhs = rhs, opts = opts }
+		end
+	end
+
+	local function map_opts(m)
+		-- Default values
+		local o = { remap = false, silent = true }
+
+		if m.opts then
+			for k, v in pairs(m.opts) do
+				o[k] = v
+			end
+		end
+		return o
+	end
+
+	for _, m in ipairs(global_keybinds()) do
+		add({ "n", "v", "s", "o" }, m.lhs, m.rhs, map_opts(m))
+	end
+
+	for _, m in ipairs(normal_keybinds) do
+		add("n", m.lhs, m.rhs, map_opts(m))
+	end
+	for _, m in ipairs(insert_keybinds) do
+		add("i", m.lhs, m.rhs, map_opts(m))
+	end
+
+	for _, group in ipairs(plugin_keybinds) do
+		if group.check() then
+			for _, m in ipairs(group.binds) do
+				add(m.modes, m.lhs, m.rhs, map_opts(m))
+			end
+		end
+	end
+
+	if M.opts.punctuation_line_navigation then
+		for _, m in ipairs(punctuation_keybinds) do
+			add({ "n", "v", "s", "o" }, m.lhs, m.rhs, map_opts(m))
+		end
+	end
+
+	if M.opts.window_management then
+		for _, m in ipairs(window_keybinds) do
+			add("n", m.lhs, m.rhs, map_opts(m))
+		end
+	end
+
+	if M.opts.leader_buffer_navigation then
+		for _, m in ipairs(buffer_keybinds) do
+			add("n", m.lhs, m.rhs, map_opts(m))
+		end
+	end
+
+	return index
+end
+
+--------------------------------------------------------------------------------
 -- Snapshot / restore
 --------------------------------------------------------------------------------
 
 -- Snapshot a key ONLY if we haven't already stored it (preserves originals)
 local function snapshot_key(mode, lhs)
 	M.baseline[mode] = M.baseline[mode] or {}
-	if M.baseline[mode][lhs] ~= nil then
-		return
-	end
 
+	-- Don't snapshot if live mapping is our own dvorak entry
+	local entry = M.index[mode] and M.index[mode][lhs]
+	local live_key = nil
 	for _, map in ipairs(vim.api.nvim_get_keymap(mode)) do
 		if map.lhs == lhs then
-			M.baseline[mode][lhs] = map
+			live_key = map
+			break
+		end
+	end
+
+	if entry and live_key then
+		if live_key.rhs == entry.rhs or live_key.callback == entry.rhs then
 			return
 		end
 	end
 
-	M.baseline[mode][lhs] = false -- explicitly unmapped
-end
-
-local function capture_baseline()
-	local function snap(modes, lhs)
-		for _, mode in ipairs(type(modes) == "string" and { modes } or modes) do
-			snapshot_key(mode, lhs)
-		end
-	end
-
-	for _, m in ipairs(global_keybinds()) do
-		snap({ "n", "v", "s", "o" }, m.lhs)
-	end
-	for _, m in ipairs(normal_keybinds) do
-		snap("n", m.lhs)
-	end
-	for _, m in ipairs(insert_keybinds) do
-		snap("i", m.lhs)
-	end
-	for _, m in ipairs(punctuation_keybinds) do
-		snap({ "n", "v", "s", "o" }, m.lhs)
-	end
-	for _, m in ipairs(window_keybinds) do
-		snap("n", m.lhs)
-	end
-	for _, m in ipairs(buffer_keybinds) do
-		snap("n", m.lhs)
-	end
-	-- Plugin keybinds use .dvorak as the lhs
-	for _, group in ipairs(plugin_keybinds) do
-		for _, m in ipairs(group.binds) do
-			snap(m.modes, m.lhs)
-		end
+	-- Overwrite anything else with current live state
+	if live_key then
+		M.baseline[mode][lhs] = live_key
+	else
+		M.baseline[mode][lhs] = false -- explicitly unmapped
 	end
 end
 
--- Snapshot all keys this plugin will touch, before we touch them
 -- Restore all snapshotted keymaps to their pre-plugin state
 local function restore_baseline()
-	for mode, maps in pairs(M.baseline) do
-		for lhs, map in pairs(maps) do
-			-- Silently delete the current binding (may or may not exist)
-			pcall(vim.keymap.del, mode, lhs)
-
-			-- Restore original if there was one
-			if map then
-				vim.keymap.set(mode, lhs, map.rhs or map.callback, {
+	for mode, keys in pairs(M.baseline) do
+		for lhs, map in pairs(keys) do
+			-- Remove mapping if it was already empty
+			if map == false then
+				pcall(vim.keymap.del, mode, lhs)
+			else
+				-- Snapshot it if it's not ours
+				snapshot_key(mode, lhs)
+				-- Apply original if there was one
+				local opts = {
+					remap = map.noremap ~= 1,
 					silent = map.silent == 1,
 					expr = map.expr == 1,
-					remap = map.remap == 1,
 					nowait = map.nowait == 1,
 					desc = map.desc,
-				})
+					buffer = map.buffer ~= 0 and map.buffeer or nil,
+				}
+				vim.keymap.set(mode, lhs, map.rhs or map.callback, opts)
 			end
 		end
 	end
@@ -249,64 +298,19 @@ local function set(modes, lhs, rhs, opts)
 	vim.keymap.set(modes, lhs, rhs, opts)
 end
 
-local function map_opts(m)
-	-- Default values
-	local o = { remap = false, silent = true }
-
-	if m.opts then
-		for k, v in pairs(m.opts) do
-			o[k] = v
-		end
-	end
-	return o
-end
-
-local function apply()
-	for _, m in ipairs(global_keybinds()) do
-		set({ "n", "v", "s", "o" }, m.lhs, m.rhs, map_opts(m))
-	end
-	for _, m in ipairs(normal_keybinds) do
-		set("n", m.lhs, m.rhs, map_opts(m))
-	end
-	for _, m in ipairs(insert_keybinds) do
-		set("i", m.lhs, m.rhs, map_opts(m))
-	end
-
-	for _, group in ipairs(plugin_keybinds) do
-		if group.check() then
-			for _, m in ipairs(group.binds) do
-				set(m.modes, m.lhs, m.rhs, map_opts(m))
-			end
-		end
-	end
-
-	if M.opts.punctuation_line_navigation then
-		for _, m in ipairs(punctuation_keybinds) do
-			set({ "n", "v", "s", "o" }, m.lhs, m.rhs, map_opts(m))
-		end
-	end
-
-	if M.opts.window_management then
-		for _, m in ipairs(window_keybinds) do
-			set("n", m.lhs, m.rhs, map_opts(m))
-		end
-	end
-
-	if M.opts.leader_buffer_navigation then
-		for _, m in ipairs(buffer_keybinds) do
-			set("n", m.lhs, m.rhs, map_opts(m))
-		end
-	end
-end
-
 --------------------------------------------------------------------------------
 -- Public API
 --------------------------------------------------------------------------------
 
 M.enable = function()
+	for mode, maps in pairs(M.index) do
+		for lhs, entry in pairs(maps) do
+			set(mode, lhs, entry.rhs, entry.opts)
+		end
+	end
+
 	M.enabled = true
 	vim.g.dvorak_enabled = true
-	apply()
 	print("Dvorak keybinds enabled")
 end
 
@@ -388,9 +392,8 @@ function M.setup(opts)
 		return
 	end
 
-	-- Capture baseline and (re)apply after all plugins have loaded.
 	local function init()
-		capture_baseline()
+		M.index = build_dvorak_index()
 		M.enable()
 	end
 
